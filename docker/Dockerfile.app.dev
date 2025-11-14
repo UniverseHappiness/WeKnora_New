@@ -1,0 +1,28 @@
+# 开发环境专用
+FROM golang:1.24-alpine
+
+WORKDIR /app
+
+# 设置Go环境变量（开发环境可以用固定值）
+ENV GOPROXY=https://goproxy.cn,direct
+ENV GOSUMDB=off
+
+# 安装开发工具
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories && \
+    apk add --no-cache git build-base bash curl vim
+
+# 安装migrate工具
+RUN go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+
+# 安装air用于热重载（关键！）
+RUN go install github.com/cosmtrek/air@v1.49.0
+
+# 只复制依赖文件（利用缓存）
+COPY go.mod go.sum ./
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
+
+# 暴露端口
+EXPOSE 8080
+
+# 默认命令：使用air热重载
+CMD ["air", "-c", ".air.toml"]

@@ -75,7 +75,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		User:    user,
 	}
 
-	logger.Infof(ctx, "User registered successfully: %s", user.Email)
+	logger.Infof(ctx, "User registered successfully!!!: %s", user.Email)
 	c.JSON(http.StatusCreated, response)
 }
 

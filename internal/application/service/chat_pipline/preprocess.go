@@ -88,7 +88,7 @@ func (p *PluginPreprocess) OnEvent(ctx context.Context, eventType types.EventTyp
 	if chatManage.RewriteQuery == "" {
 		return next()
 	}
-
+	logger.GetLogger(ctx).Info("开始查询预处理")
 	logger.GetLogger(ctx).Infof("Starting query preprocessing, original query: %s", chatManage.RewriteQuery)
 
 	// 1. Basic text cleaning
