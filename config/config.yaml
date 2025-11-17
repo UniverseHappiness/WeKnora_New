@@ -145,8 +145,6 @@ conversation:
     ###############
     Output: 量子纠缠, 量子计算, 量子, 纠缠, 原理
 
-
-
     # Real Data
     USER: {{.Query}}
 

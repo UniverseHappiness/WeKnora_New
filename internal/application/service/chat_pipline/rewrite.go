@@ -135,10 +135,16 @@ func (p *PluginRewrite) OnEvent(ctx context.Context,
 		"Yesterday":    time.Now().AddDate(0, 0, -1).Format("2006-01-02"),
 		"Conversation": historyList,
 	})
+
 	if err != nil {
 		logger.Errorf(ctx, "Failed to execute template, session_id: %s, error: %v", chatManage.SessionID, err)
 		return next()
 	}
+	// 输出 userContent 和 systemContent 内容到日志
+	logger.GetLogger(ctx).Infof("User content for rewrite, session_id: %s, content: %s", chatManage.SessionID, userContent.String())
+	logger.GetLogger(ctx).Infof("System content for rewrite, session_id: %s, content: %s", chatManage.SessionID, systemContent.String())
+
+
 	rewriteModel, err := p.modelService.GetChatModel(ctx, chatManage.ChatModelID)
 	if err != nil {
 		logger.Errorf(ctx, "Failed to get model, session_id: %s, error: %v", chatManage.SessionID, err)

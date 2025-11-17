@@ -1,23 +1,27 @@
 package chatpipline
 
 import (
-	"context"
-	"regexp"
-	"strings"
-	"unicode"
+    "bytes"
+    "context"
+    "html/template"
+    "regexp"
+    "strings"
+    "unicode"
 
-	"github.com/Tencent/WeKnora/internal/config"
-	"github.com/Tencent/WeKnora/internal/logger"
-	"github.com/Tencent/WeKnora/internal/types"
-	"github.com/Tencent/WeKnora/internal/types/interfaces"
-	"github.com/yanyiwu/gojieba"
+    "github.com/Tencent/WeKnora/internal/config"
+    "github.com/Tencent/WeKnora/internal/logger"
+    "github.com/Tencent/WeKnora/internal/models/chat"
+    "github.com/Tencent/WeKnora/internal/types"
+    "github.com/Tencent/WeKnora/internal/types/interfaces"
+    "github.com/yanyiwu/gojieba"
 )
 
 // PluginPreprocess Query preprocessing plugin
 type PluginPreprocess struct {
-	config    *config.Config
-	jieba     *gojieba.Jieba
-	stopwords map[string]struct{}
+    config    *config.Config
+    modelService interfaces.ModelService
+    jieba     *gojieba.Jieba
+    stopwords map[string]struct{}
 }
 
 // Regular expressions for text cleaning
@@ -30,9 +34,10 @@ var (
 
 // NewPluginPreprocess Creates a new query preprocessing plugin
 func NewPluginPreprocess(
-	eventManager *EventManager,
-	config *config.Config,
-	cleaner interfaces.ResourceCleaner,
+    eventManager *EventManager,
+    modelService interfaces.ModelService,
+    config *config.Config,
+    cleaner interfaces.ResourceCleaner,
 ) *PluginPreprocess {
 	// Use default dictionary for Jieba tokenizer
 	jieba := gojieba.NewJieba()
@@ -40,11 +45,12 @@ func NewPluginPreprocess(
 	// Load stopwords from built-in stopword library
 	stopwords := loadStopwords()
 
-	res := &PluginPreprocess{
-		config:    config,
-		jieba:     jieba,
-		stopwords: stopwords,
-	}
+    res := &PluginPreprocess{
+        config:       config,
+        modelService: modelService,
+        jieba:        jieba,
+        stopwords:    stopwords,
+    }
 
 	// Register resource cleanup function
 	if cleaner != nil {
@@ -85,27 +91,75 @@ func (p *PluginPreprocess) ActivationEvents() []types.EventType {
 
 // OnEvent Process events
 func (p *PluginPreprocess) OnEvent(ctx context.Context, eventType types.EventType, chatManage *types.ChatManage, next func() *PluginError) *PluginError {
-	if chatManage.RewriteQuery == "" {
-		return next()
-	}
-	logger.GetLogger(ctx).Info("开始查询预处理")
-	logger.GetLogger(ctx).Infof("Starting query preprocessing, original query: %s", chatManage.RewriteQuery)
+    if chatManage.RewriteQuery == "" {
+        return next()
+    }
+    logger.GetLogger(ctx).Info("开始查询预处理")
+    logger.GetLogger(ctx).Infof("Starting query preprocessing, original query: %s", chatManage.RewriteQuery)
 
-	// 1. Basic text cleaning
-	processed := p.cleanText(chatManage.RewriteQuery)
+    cleaned := p.cleanText(chatManage.RewriteQuery)
 
-	// 2. Tokenization
-	segments := p.segmentText(processed)
+    useLLM := p.config != nil && p.config.Conversation != nil &&
+        p.config.Conversation.KeywordsExtractionPrompt != "" &&
+        p.config.Conversation.KeywordsExtractionPromptUser != ""
 
-	// 3. Stopword filtering and reconstruction
-	filteredSegments := p.filterStopwords(segments)
+    if useLLM && p.modelService != nil {
+        systemTmpl, err := template.New("keywordsSystem").Parse(p.config.Conversation.KeywordsExtractionPrompt)
+        if err == nil {
+            userTmpl, err2 := template.New("keywordsUser").Parse(p.config.Conversation.KeywordsExtractionPromptUser)
+            if err2 == nil {
+                var systemContent, userContent bytes.Buffer
+                _ = systemTmpl.Execute(&systemContent, map[string]interface{}{
+                    "Query": cleaned,
+                })
+                _ = userTmpl.Execute(&userContent, map[string]interface{}{
+                    "Query": cleaned,
+                })
 
-	// Update preprocessed query
-	chatManage.ProcessedQuery = strings.Join(filteredSegments, " ")
+                chatModel, err3 := p.modelService.GetChatModel(ctx, chatManage.ChatModelID)
+                if err3 == nil && chatModel != nil {
+                    thinking := false
+                    resp, err4 := chatModel.Chat(ctx, []chat.Message{
+                        {Role: "system", Content: systemContent.String()},
+                        {Role: "user", Content: userContent.String()},
+                    }, &chat.ChatOptions{Temperature: 0.1, MaxCompletionTokens: 64, Thinking: &thinking})
+                    if err4 == nil && strings.TrimSpace(resp.Content) != "" {
+                        content := strings.TrimSpace(resp.Content)
+                        content = strings.TrimPrefix(content, "Output:")
+                        content = strings.TrimPrefix(content, "输出:")
+                        content = strings.ReplaceAll(content, "，", ",")
+                        parts := strings.Split(content, ",")
+                        keywords := make([]string, 0, len(parts))
+                        seen := map[string]struct{}{}
+                        for _, part := range parts {
+                            w := strings.TrimSpace(part)
+                            if w == "" {
+                                continue
+                            }
+                            if _, ok := seen[w]; ok {
+                                continue
+                            }
+                            seen[w] = struct{}{}
+                            keywords = append(keywords, w)
+                        }
+                        if len(keywords) > 0 {
+                            chatManage.ProcessedQuery = strings.Join(keywords, " ")
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-	logger.GetLogger(ctx).Infof("Query preprocessing complete, processed query: %s", chatManage.ProcessedQuery)
+    if strings.TrimSpace(chatManage.ProcessedQuery) == "" {
+        segments := p.segmentText(cleaned)
+        filteredSegments := p.filterStopwords(segments)
+        chatManage.ProcessedQuery = strings.Join(filteredSegments, " ")
+    }
 
-	return next()
+    logger.GetLogger(ctx).Infof("Query preprocessing complete, processed query: %s", chatManage.ProcessedQuery)
+
+    return next()
 }
 
 // cleanText Basic text cleaning

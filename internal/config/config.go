@@ -35,26 +35,28 @@ type VectorDatabaseConfig struct {
 
 // ConversationConfig 对话服务配置
 type ConversationConfig struct {
-	MaxRounds                  int            `yaml:"max_rounds" json:"max_rounds"`
-	KeywordThreshold           float64        `yaml:"keyword_threshold" json:"keyword_threshold"`
-	EmbeddingTopK              int            `yaml:"embedding_top_k" json:"embedding_top_k"`
-	VectorThreshold            float64        `yaml:"vector_threshold" json:"vector_threshold"`
-	RerankTopK                 int            `yaml:"rerank_top_k" json:"rerank_top_k"`
-	RerankThreshold            float64        `yaml:"rerank_threshold" json:"rerank_threshold"`
-	FallbackStrategy           string         `yaml:"fallback_strategy" json:"fallback_strategy"`
-	FallbackResponse           string         `yaml:"fallback_response" json:"fallback_response"`
-	FallbackPrompt             string         `yaml:"fallback_prompt" json:"fallback_prompt"`
-	EnableRewrite              bool           `yaml:"enable_rewrite" json:"enable_rewrite"`
-	EnableRerank               bool           `yaml:"enable_rerank" json:"enable_rerank"`
-	Summary                    *SummaryConfig `yaml:"summary" json:"summary"`
-	GenerateSessionTitlePrompt string         `yaml:"generate_session_title_prompt" json:"generate_session_title_prompt"`
-	GenerateSummaryPrompt      string         `yaml:"generate_summary_prompt" json:"generate_summary_prompt"`
-	RewritePromptSystem        string         `yaml:"rewrite_prompt_system" json:"rewrite_prompt_system"`
-	RewritePromptUser          string         `yaml:"rewrite_prompt_user" json:"rewrite_prompt_user"`
-	SimplifyQueryPrompt        string         `yaml:"simplify_query_prompt" json:"simplify_query_prompt"`
-	SimplifyQueryPromptUser    string         `yaml:"simplify_query_prompt_user" json:"simplify_query_prompt_user"`
-	ExtractEntitiesPrompt      string         `yaml:"extract_entities_prompt" json:"extract_entities_prompt"`
-	ExtractRelationshipsPrompt string         `yaml:"extract_relationships_prompt" json:"extract_relationships_prompt"`
+    MaxRounds                  int            `yaml:"max_rounds" json:"max_rounds"`
+    KeywordThreshold           float64        `yaml:"keyword_threshold" json:"keyword_threshold"`
+    EmbeddingTopK              int            `yaml:"embedding_top_k" json:"embedding_top_k"`
+    VectorThreshold            float64        `yaml:"vector_threshold" json:"vector_threshold"`
+    RerankTopK                 int            `yaml:"rerank_top_k" json:"rerank_top_k"`
+    RerankThreshold            float64        `yaml:"rerank_threshold" json:"rerank_threshold"`
+    FallbackStrategy           string         `yaml:"fallback_strategy" json:"fallback_strategy"`
+    FallbackResponse           string         `yaml:"fallback_response" json:"fallback_response"`
+    FallbackPrompt             string         `yaml:"fallback_prompt" json:"fallback_prompt"`
+    EnableRewrite              bool           `yaml:"enable_rewrite" json:"enable_rewrite"`
+    EnableRerank               bool           `yaml:"enable_rerank" json:"enable_rerank"`
+    Summary                    *SummaryConfig `yaml:"summary" json:"summary"`
+    GenerateSessionTitlePrompt string         `yaml:"generate_session_title_prompt" json:"generate_session_title_prompt"`
+    GenerateSummaryPrompt      string         `yaml:"generate_summary_prompt" json:"generate_summary_prompt"`
+    RewritePromptSystem        string         `yaml:"rewrite_prompt_system" json:"rewrite_prompt_system"`
+    RewritePromptUser          string         `yaml:"rewrite_prompt_user" json:"rewrite_prompt_user"`
+    SimplifyQueryPrompt        string         `yaml:"simplify_query_prompt" json:"simplify_query_prompt"`
+    SimplifyQueryPromptUser    string         `yaml:"simplify_query_prompt_user" json:"simplify_query_prompt_user"`
+    ExtractEntitiesPrompt      string         `yaml:"extract_entities_prompt" json:"extract_entities_prompt"`
+    ExtractRelationshipsPrompt string         `yaml:"extract_relationships_prompt" json:"extract_relationships_prompt"`
+    KeywordsExtractionPrompt   string         `yaml:"keywords_extraction_prompt" json:"keywords_extraction_prompt"`
+    KeywordsExtractionPromptUser string       `yaml:"keywords_extraction_prompt_user" json:"keywords_extraction_prompt_user"`
 }
 
 // SummaryConfig 摘要配置
