@@ -139,6 +139,22 @@ func (h *KnowledgeBaseHandler) validateAndGetKnowledgeBase(c *gin.Context) (*typ
 // GetKnowledgeBase handles requests to retrieve a knowledge base by ID
 func (h *KnowledgeBaseHandler) GetKnowledgeBase(c *gin.Context) {
 	ctx := c.Request.Context()
+	// 调试：输出 c 和 ctx 的关键信息差异
+	logger.Infof(ctx, "gin.Context keys: %+v", c.Keys)
+	logger.Infof(ctx, "gin.Context params: id=%s, query=%s", c.Param("id"), c.Request.URL.RawQuery)
+	if rid, ok := c.Get(types.RequestIDContextKey.String()); ok {
+		logger.Infof(ctx, "gin.Context RequestID: %v", rid)
+	}
+	if tid, ok := c.Get(types.TenantIDContextKey.String()); ok {
+		logger.Infof(ctx, "gin.Context TenantID: %v", tid)
+	}
+	if ctxTenant := ctx.Value(types.TenantIDContextKey); ctxTenant != nil {
+		logger.Infof(ctx, "context.Context TenantID: %v", ctxTenant)
+	}
+	if ctxReqID := ctx.Value(types.RequestIDContextKey); ctxReqID != nil {
+		logger.Infof(ctx, "context.Context RequestID: %v", ctxReqID)
+	}
+	logger.Infof(ctx, "HTTP method=%s, path=%s", c.Request.Method, c.Request.URL.Path)
 	logger.Info(ctx, "Start retrieving knowledge base")
 
 	// Validate and get the knowledge base

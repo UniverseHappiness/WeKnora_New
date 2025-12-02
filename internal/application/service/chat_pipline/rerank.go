@@ -101,11 +101,17 @@ func (p *PluginRerank) rerank(ctx context.Context,
 		return nil
 	}
 
-	// Log top scores for debugging
+	// Log top scores for debugging (truncate passages)
 	logger.Infof(ctx, "Reranking completed, filtering results with threshold: %f", chatManage.RerankThreshold)
+	const maxLogRunes = 200
 	for i := range min(3, len(rerankResp)) {
-		logger.Infof(ctx, "Top %d score of rerankResp: %f, passages: %s, index: %d",
-			i+1, rerankResp[i].RelevanceScore, rerankResp[i].Document.Text, rerankResp[i].Index,
+		txt := rerankResp[i].Document.Text
+		runes := []rune(txt)
+		if len(runes) > maxLogRunes {
+			txt = string(runes[:maxLogRunes]) + "…"
+		}
+		logger.Debugf(ctx, "Top %d score: %f, index: %d, passages: %s",
+			i+1, rerankResp[i].RelevanceScore, rerankResp[i].Index, txt,
 		)
 	}
 

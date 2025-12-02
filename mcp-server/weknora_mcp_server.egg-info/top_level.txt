@@ -1,0 +1,5 @@
+main
+run
+run_server
+test_module
+weknora_mcp_server

@@ -427,6 +427,18 @@ func (s *knowledgeBaseService) processSearchResults(ctx context.Context,
 
 	// First pass: Build chunk map and collect parent IDs
 	for _, chunk := range allChunks {
+		logger.Debugf(ctx, "Chunk details, id: %s, type: %s, knowledge_id: %s, parent_id: %s, pre_id: %s, next_id: %s, relation_len: %d, indirect_relation_len: %d, image_info_len: %d, content_len: %d",
+			chunk.ID,
+			chunk.ChunkType,
+			chunk.KnowledgeID,
+			chunk.ParentChunkID,
+			chunk.PreChunkID,
+			chunk.NextChunkID,
+			len(chunk.RelationChunks),
+			len(chunk.IndirectRelationChunks),
+			len(chunk.ImageInfo),
+			len(chunk.Content),
+		)
 		chunkMap[chunk.ID] = chunk
 		processedChunkIDs[chunk.ID] = true
 

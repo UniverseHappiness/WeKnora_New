@@ -99,6 +99,13 @@ func (s *tenantService) GetTenantByID(ctx context.Context, id uint) (*types.Tena
 	}
 
 	logger.Infof(ctx, "Tenant retrieved successfully, ID: %d, name: %s", tenant.ID, tenant.Name)
+	safeTenant := *tenant
+	if len(safeTenant.APIKey) > 8 {
+		safeTenant.APIKey = safeTenant.APIKey[:4] + "****" + safeTenant.APIKey[len(safeTenant.APIKey)-4:]
+	} else if safeTenant.APIKey != "" {
+		safeTenant.APIKey = "****"
+	}
+	logger.Infof(ctx, "Tenant detail: %+v", safeTenant)
 	return tenant, nil
 }
 

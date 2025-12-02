@@ -1,0 +1,3 @@
+[console_scripts]
+weknora-mcp-server = main:sync_main
+weknora-server = run_server:main

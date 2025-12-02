@@ -1,11 +1,12 @@
 package chatpipline
 
 import (
-	"context"
+    "context"
+    "encoding/json"
 
-	"github.com/Tencent/WeKnora/internal/logger"
-	"github.com/Tencent/WeKnora/internal/types"
-	"github.com/Tencent/WeKnora/internal/types/interfaces"
+    "github.com/Tencent/WeKnora/internal/logger"
+    "github.com/Tencent/WeKnora/internal/types"
+    "github.com/Tencent/WeKnora/internal/types/interfaces"
 )
 
 // PluginChatCompletionStream implements streaming chat completion functionality
@@ -45,8 +46,12 @@ func (p *PluginChatCompletionStream) OnEvent(ctx context.Context,
 	}
 
 	// Prepare base messages without history
-	logger.Info(ctx, "Preparing chat messages")
-	chatMessages := prepareMessagesWithHistory(chatManage)
+    logger.Info(ctx, "Preparing chat messages")
+    chatMessages := prepareMessagesWithHistory(chatManage)
+    messagesJSON, _ := json.Marshal(chatMessages)
+    ctxWithMsg := logger.WithField(ctx, "chat_messages", string(messagesJSON))
+    ctxWithMsg = logger.WithField(ctxWithMsg, "chat_messages_count", len(chatMessages))
+    logger.Info(ctxWithMsg, "streaming chat messages prepared")
 
 	// Initiate streaming chat model call
 	logger.Info(ctx, "Calling chat stream model")

@@ -144,7 +144,6 @@ func (p *PluginRewrite) OnEvent(ctx context.Context,
 	logger.GetLogger(ctx).Infof("User content for rewrite, session_id: %s, content: %s", chatManage.SessionID, userContent.String())
 	logger.GetLogger(ctx).Infof("System content for rewrite, session_id: %s, content: %s", chatManage.SessionID, systemContent.String())
 
-
 	rewriteModel, err := p.modelService.GetChatModel(ctx, chatManage.ChatModelID)
 	if err != nil {
 		logger.Errorf(ctx, "Failed to get model, session_id: %s, error: %v", chatManage.SessionID, err)

@@ -37,7 +37,7 @@ func (p *PluginMerge) OnEvent(ctx context.Context,
 		searchResult = chatManage.SearchResult
 	}
 
-	logger.Infof(ctx, "Processing %d chunks for merging", len(searchResult))
+	logger.Debugf(ctx, "Processing %d chunks for merging", len(searchResult))
 
 	if len(searchResult) == 0 {
 		logger.Info(ctx, "No chunks available for merging")
@@ -50,12 +50,12 @@ func (p *PluginMerge) OnEvent(ctx context.Context,
 		knowledgeGroup[chunk.KnowledgeID] = append(knowledgeGroup[chunk.KnowledgeID], chunk)
 	}
 
-	logger.Infof(ctx, "Grouped chunks by knowledge ID, %d knowledge sources", len(knowledgeGroup))
+	logger.Debugf(ctx, "Grouped chunks by knowledge ID, %d knowledge sources", len(knowledgeGroup))
 
 	mergedChunks := []*types.SearchResult{}
 	// Process each knowledge source separately
 	for knowledgeID, chunks := range knowledgeGroup {
-		logger.Infof(ctx, "Processing knowledge ID: %s with %d chunks", knowledgeID, len(chunks))
+		logger.Debugf(ctx, "Processing knowledge ID: %s with %d chunks", knowledgeID, len(chunks))
 
 		// Sort chunks by their start position in the original document
 		sort.Slice(chunks, func(i, j int) bool {
@@ -100,7 +100,7 @@ func (p *PluginMerge) OnEvent(ctx context.Context,
 			}
 		}
 
-		logger.Infof(ctx, "Merged %d chunks into %d chunks for knowledge ID: %s",
+		logger.Debugf(ctx, "Merged %d chunks into %d chunks for knowledge ID: %s",
 			len(chunks), len(knowledgeMergedChunks), knowledgeID)
 
 		mergedChunks = append(mergedChunks, knowledgeMergedChunks...)
@@ -111,7 +111,7 @@ func (p *PluginMerge) OnEvent(ctx context.Context,
 		return mergedChunks[i].Score > mergedChunks[j].Score
 	})
 
-	logger.Infof(ctx, "Final merged result: %d chunks, sorted by score", len(mergedChunks))
+	logger.Debugf(ctx, "Final merged result: %d chunks, sorted by score", len(mergedChunks))
 
 	chatManage.MergeResult = mergedChunks
 	return next()

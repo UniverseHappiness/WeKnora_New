@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-
-	"github.com/Tencent/WeKnora/internal/logger"
 )
 
 // AliyunReranker implements a reranking system based on Aliyun DashScope models
@@ -112,10 +110,10 @@ func (r *AliyunReranker) Rerank(ctx context.Context, query string, documents []s
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.apiKey))
 
-	// Log the curl equivalent for debugging
-	logger.Debugf(ctx, "curl -X POST %s -H \"Content-Type: application/json\" -H \"Authorization: Bearer %s\" -d '%s'",
-		r.baseURL, r.apiKey, string(jsonData),
-	)
+	// // Log the curl equivalent for debugging
+	// logger.Debugf(ctx, "curl -X POST %s -H \"Content-Type: application/json\" -H \"Authorization: Bearer %s\" -d '%s'",
+	// 	r.baseURL, r.apiKey, string(jsonData),
+	// )
 
 	resp, err := r.client.Do(req)
 	if err != nil {

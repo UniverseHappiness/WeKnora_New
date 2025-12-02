@@ -38,6 +38,16 @@ func NewTenantHandler(service interfaces.TenantService) *TenantHandler {
 func (h *TenantHandler) CreateTenant(c *gin.Context) {
 	ctx := c.Request.Context()
 
+	// 遍历并打印 c (gin.Context) 中的所有键值对
+	// Iterate and print all key-value pairs in c (gin.Context)
+	if c.Keys != nil {
+		for k, v := range c.Keys {
+			logger.Infof(ctx, "gin.Context Key: %s, Value: %v", k, v)
+		}
+	} else {
+		logger.Info(ctx, "gin.Context has no keys initialized")
+	}
+
 	logger.Info(ctx, "Start creating tenant")
 
 	var tenantData types.Tenant
@@ -78,6 +88,15 @@ func (h *TenantHandler) CreateTenant(c *gin.Context) {
 func (h *TenantHandler) GetTenant(c *gin.Context) {
 	ctx := c.Request.Context()
 
+	// 遍历并打印 c (gin.Context) 中的所有键值对
+	// Iterate and print all key-value pairs in c (gin.Context)
+	if c.Keys != nil {
+		for k, v := range c.Keys {
+			logger.Infof(ctx, "gin.Context Key: %s, Value: %v", k, v)
+		}
+	} else {
+		logger.Info(ctx, "gin.Context has no keys initialized")
+	}
 	logger.Info(ctx, "Start retrieving tenant")
 
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)

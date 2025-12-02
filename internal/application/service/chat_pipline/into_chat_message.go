@@ -37,7 +37,6 @@ func (p *PluginIntoChatMessage) OnEvent(ctx context.Context,
 	// Extract content from merge results
 	passages := make([]string, len(chatManage.MergeResult))
 	for i, result := range chatManage.MergeResult {
-		// 合并内容和图片信息
 		passages[i] = getEnrichedPassageForChat(ctx, result)
 	}
 
@@ -76,18 +75,21 @@ func (p *PluginIntoChatMessage) OnEvent(ctx context.Context,
 
 // getEnrichedPassageForChat 合并Content和ImageInfo的文本内容，为聊天消息准备
 func getEnrichedPassageForChat(ctx context.Context, result *types.SearchResult) string {
-	// 如果没有图片信息，直接返回内容
+	title := buildPassageHeader(result)
 	if result.Content == "" && result.ImageInfo == "" {
-		return ""
+		return title
 	}
-
-	// 如果只有内容，没有图片信息
-	if result.ImageInfo == "" {
-		return result.Content
+	content := result.Content
+	if result.ImageInfo != "" {
+		content = enrichContentWithImageInfo(ctx, content, result.ImageInfo)
 	}
-
-	// 处理图片信息并与内容合并
-	return enrichContentWithImageInfo(ctx, result.Content, result.ImageInfo)
+	if title == "" {
+		return content
+	}
+	if content == "" {
+		return title
+	}
+	return title + "\n" + content
 }
 
 // 正则表达式用于匹配Markdown图片链接
@@ -188,4 +190,27 @@ func enrichContentWithImageInfo(ctx context.Context, content string, imageInfoJS
 		len(matches), len(additionalImageTexts))
 
 	return content
+}
+
+func buildPassageHeader(result *types.SearchResult) string {
+	title := strings.TrimSpace(result.KnowledgeTitle)
+	if title == "" && result.Metadata != nil {
+		if v, ok := result.Metadata["title"]; ok {
+			title = strings.TrimSpace(v)
+		}
+	}
+	if title == "" {
+		title = strings.TrimSpace(result.KnowledgeFilename)
+	}
+	if title == "" {
+		title = strings.TrimSpace(result.KnowledgeSource)
+	}
+	if title == "" {
+		title = "未知标题"
+	}
+	seq := result.Seq
+	if seq == 0 {
+		seq = result.ChunkIndex
+	}
+	return fmt.Sprintf("标题: %s | 分块序号: %d", title, seq)
 }
